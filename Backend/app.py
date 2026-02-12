@@ -6,19 +6,18 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
+# Loading environment variables
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# MongoDB connection (from .env)
+# MongoDB connection
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["staychat_db"]
 collection = db["items"]
 
 
-# Helper function to serialize MongoDB document
 def serialize_item(item):
     return {
         "_id": str(item["_id"]),
@@ -28,14 +27,14 @@ def serialize_item(item):
     }
 
 
-# ✅ Get all items
+#Get all items
 @app.route("/items", methods=["GET"])
 def get_items():
     items = collection.find().sort("timestamp", -1)
     return jsonify([serialize_item(item) for item in items])
 
 
-# ✅ Add new item
+#Add new item
 @app.route("/items", methods=["POST"])
 def add_item():
     data = request.json
@@ -52,14 +51,14 @@ def add_item():
     return jsonify(serialize_item(item))
 
 
-# ✅ Delete item
+#Delete item
 @app.route("/items/<id>", methods=["DELETE"])
 def delete_item(id):
     collection.delete_one({"_id": ObjectId(id)})
     return jsonify({"message": "Item deleted successfully"})
 
 
-# ✅ Free Summarization Logic (No OpenAI)
+#Free Summarization Logic as for the openai we have to pay 
 @app.route("/summarize", methods=["POST"])
 def summarize():
     data = request.json
@@ -68,7 +67,6 @@ def summarize():
     if not text:
         return jsonify({"error": "Text required"}), 400
 
-    # Simple summary logic:
     sentences = text.split(".")
     summary = sentences[0]
 
